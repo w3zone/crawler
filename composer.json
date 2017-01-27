@@ -1,0 +1,25 @@
+{
+    "name": "w3zone/crawler",
+    "author": [
+        {
+            "name": "w3.zone",
+            "email": "info@w3.zone"
+        }
+    ],
+    "keywords": [
+        "crawler",
+        "spider",
+        "curl",
+        "bash"
+    ],
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "w3zone\\Crawler\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=5.5"
+    },
+    "prefer-stable": true
+}
