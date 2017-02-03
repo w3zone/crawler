@@ -5,29 +5,19 @@ class phpCurl implements ServicesInterface
 {
     private $curlHandler;
 
+    /**
+    * array of curl options
+    *
+    * @var array
+    */
     private $options = [];
 
-    public function __construct()
-    {
-
-    }
-
-    private function constantify($argument)
-    {
-        return (is_string($argument) ? constant($argument) : $argument);
-    }
-
-    private function prepareOption($key, $value)
-    {
-        $key = $this->constantify($key);
-        $this->options[$key] = $value;
-    }
-
-    private function setOptions($options)
-    {
-        return curl_setopt_array($this->curlHandler, $options);
-    }
-
+    /**
+    * set curl cookies options
+    *
+    * @param array $cookie
+    * @return void
+    */
     public function cookieHandler($cookie)
     {
         $cookieFile = $cookie['file'];
@@ -43,10 +33,51 @@ class phpCurl implements ServicesInterface
         }
     }
 
+    /**
+    * set curl proxy options
+    *
+    * @param array $proxy
+    * @return void
+    */
     public function proxyHandler($proxy)
     {
         $this->prepreOption(CURLOPT_PROXY, $proxy['ip']);
         $this->prepreOption(CURLOPT_PROXYTYPE, constant('CURLOPT_' . strtoupper($proxy['type'])));
+    }
+
+    /**
+    * check if the curlopt is a constant
+    *
+    * @param mixed $argument
+    * @return string
+    */
+    private function constantify($argument)
+    {
+        return (is_string($argument) ? constant($argument) : $argument);
+    }
+
+    /**
+    * prepare curl options
+    *
+    * @param mixed $key
+    * @param string $value
+    * @return void
+    */
+    private function prepareOption($key, $value)
+    {
+        $key = $this->constantify($key);
+        $this->options[$key] = $value;
+    }
+
+    /**
+    * set array of curl options
+    *
+    * @param array $options
+    * @return void
+    */
+    private function setOptions($options)
+    {
+        return curl_setopt_array($this->curlHandler, $options);
     }
 
     /*
@@ -135,6 +166,12 @@ class phpCurl implements ServicesInterface
         return $result;
     }
 
+    /**
+    * Extracting cookies from header string
+    *
+    * @param string $headers
+    * @return string
+    */
     private function getCookiesFromHeaders($headers)
     {
         preg_match_all('#Set-Cookie:[\s]([^;]+)#i', $headers, $cookies);

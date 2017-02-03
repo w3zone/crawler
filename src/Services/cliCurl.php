@@ -3,75 +3,80 @@ namespace w3zone\Crawler\Services;
 
 class cliCurl implements ServicesInterface
 {
-    private $statement = [];
+    /**
+    * array of curl request options
+    *
+    * @var array
+    */
+    private $options = [];
+
     private $headers = [];
     private $cookies = [];
-    private $dumpedHeaders = null;
 
     /*
     * {@inheritDoc}
     *
     * throw \Exception
     */
-    public function initialize($arguments, $settings)
+    public function initialize($options, $settings)
     {
-        $this->statement = [];
-        if ($arguments['method'] == 'post') {
-            $this->statement[] = '-X POST --data "' . http_build_query($arguments['data']) . '"';
+        $this->options = [];
+        if ($options['method'] == 'post') {
+            $this->options[] = '-X POST --data "' . http_build_query($options['data']) . '"';
         } else {
-            $this->statement[] = '-X GET';
+            $this->options[] = '-X GET';
         }
 
-        if (isset($arguments['referer'])) {
-            $this->statement[] = '-e "' . $arguments['referer'] . '"';
+        if (isset($options['referer'])) {
+            $this->options[] = '-e "' . $options['referer'] . '"';
         }
 
-        if (true === $arguments['dumpHeaders']) {
-            $this->statement[] = '-D -';
+        if (true === $options['dumpHeaders']) {
+            $this->options[] = '-D -';
         }
 
-        if (isset($arguments['json'])) {
+        if (isset($options['json'])) {
             $this->headers[] = 'Accept: application/json';
             $this->headers[] = 'Content-type: application/json';
         }
 
-        if (isset($arguments['xml'])) {
+        if (isset($options['xml'])) {
             $this->headers[] = 'Accept: text/xml';
             $this->headers[] = 'Content-type: text/xml';
         }
 
-        if (isset($arguments['headers'])) {
-            $this->headers = $arguments['headers'];
+        if (isset($options['headers'])) {
+            $this->headers = $options['headers'];
         }
 
-        if (isset($arguments['cookies'])) {
-            if ($arguments['cookies']['mode'] == 'r') {
-                $this->cookies[] = '-b "' . $arguments['cookies']['file'] . '"';
-            } else if ($arguments['cookies']['mode'] == 'w') {
-                $this->cookies[] = '-c "' . $arguments['cookies']['file'] . '"';
-            } else if ($arguments['cookies']['mode'] == 'r+w' || $arguments['cookies']['mode'] == 'w+r') {
-                $this->cookies[] = '-b "' . $arguments['cookies']['file'] . '"';
-                $this->cookies[] = '-c "' . $arguments['cookies']['file'] . '"';
+        if (isset($options['cookies'])) {
+            if ($options['cookies']['mode'] == 'r') {
+                $this->cookies[] = '-b "' . $options['cookies']['file'] . '"';
+            } else if ($options['cookies']['mode'] == 'w') {
+                $this->cookies[] = '-c "' . $options['cookies']['file'] . '"';
+            } else if ($options['cookies']['mode'] == 'r+w' || $options['cookies']['mode'] == 'w+r') {
+                $this->cookies[] = '-b "' . $options['cookies']['file'] . '"';
+                $this->cookies[] = '-c "' . $options['cookies']['file'] . '"';
             }
-            $this->statement[] = ' ' . implode(' ', $this->cookies) . ' ';
+            $this->options[] = ' ' . implode(' ', $this->cookies) . ' ';
         }
 
         if (count($this->headers) > 0) {
-            $this->statement[] = '-H "' . implode('" -H "', $this->headers) . '"';
+            $this->options[] = '-H "' . implode('" -H "', $this->headers) . '"';
         }
 
-        if (isset($arguments['proxy'])) {
-            $proxy = $arguments['proxy'];
-            $this->statement[] = '-x "' . $proxy['ip'] . '" ' . ($proxy['type'] != 'http' ? '--' . $proxy['type'] : '');
+        if (isset($options['proxy'])) {
+            $proxy = $options['proxy'];
+            $this->options[] = '-x "' . $proxy['ip'] . '" ' . ($proxy['type'] != 'http' ? '--' . $proxy['type'] : '');
         }
 
-        if (isset($arguments['initialize'])) {
+        if (isset($options['initialize'])) {
             throw new \Exception('you can\'t re-initialize options in cliCurl service');
         }
 
-        $this->statement[] = '-H "Expect:"';
+        $this->options[] = '-H "Expect:"';
 
-        $this->statement[] = '"' . $arguments['url'] . '"';
+        $this->options[] = '"' . $options['url'] . '"';
 
         return $this;
     }
@@ -82,9 +87,9 @@ class cliCurl implements ServicesInterface
     public function run()
     {
         $result = [];
-        $statement = implode(' ', $this->statement);
+        $options = implode(' ', $this->options);
 
-        $response = shell_exec('curl -s --compressed ' . $statement);
+        $response = shell_exec('curl -s --compressed ' . $options);
 
         list($headers, $body) = explode("\r\n\r\n", $response, 2);
 
@@ -102,6 +107,12 @@ class cliCurl implements ServicesInterface
         return $result;
     }
 
+    /**
+    * Explain response header
+    *
+    * @param string $headers
+    * @return array
+    */
     private function explainHeaders($headers)
     {
         preg_match('#HTTP\/1\.1 ([0-9]+) (.*?)#U', $headers, $statusCode);
@@ -113,6 +124,12 @@ class cliCurl implements ServicesInterface
         return ['statusCode' => $statusCode[1], 'cookies' => $this->getCookiesFromHeaders($headers)];
     }
 
+    /**
+    * Extracting cookies from header string
+    *
+    * @param string $headers
+    * @return string
+    */
     private function getCookiesFromHeaders($headers)
     {
         preg_match_all('#Set-Cookie:[\s]([^;]+)#i', $headers, $cookies);
