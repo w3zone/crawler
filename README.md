@@ -30,7 +30,7 @@ $link = 'http://www.example.com';
 // get method may contain link string or an array [url, query string]
 $homePage = $crawler->get($link)->dumpHeaders()->run();
 
-$response = $crawler->get($link)->dumpHeaders()->cookies(homePage['cookies'], 'r+w')->run();
+$response = $crawler->get($link)->dumpHeaders()->cookies($homePage['cookies'], 'r+w')->run();
 ```
 
 ## Available Services
