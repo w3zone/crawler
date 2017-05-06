@@ -36,11 +36,11 @@ $response = $crawler->get($link)->dumpHeaders()->cookies($homePage['cookies'], '
 ```
 
 ## Available Services
-* phpCurl
+* phpCurl  
 `use w3zone\Crawler\Services\phpCurl;`
-* nodejsRequest
+* nodejsRequest  
 `use w3zone\Crawler\Services\nodejsRequest;`
-* cliCurl
+* cliCurl  
 `use w3zone\Crawler\Services\cliCurl;`
 
 ## Available Methods
