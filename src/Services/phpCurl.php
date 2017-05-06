@@ -158,9 +158,9 @@ class phpCurl implements ServicesInterface
 
         $headerSize = curl_getinfo($this->curlHandler, CURLINFO_HEADER_SIZE);
         $result['statusCode'] = curl_getinfo($this->curlHandler, CURLINFO_HTTP_CODE);
-        $result['body'] = substr($response, $headerSize);
         $result['headers'] = substr($response, 0, $headerSize);
         $result['cookies'] = $this->getCookiesFromHeaders($result['headers']);
+        $result['body'] = substr($response, $headerSize);
         curl_close($this->curlHandler);
 
         return $result;
