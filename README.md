@@ -116,3 +116,37 @@ note that , this method will overwrite the other options
 fire the request.
 
 -------------------------------
+
+
+### Examples:-
+
+Quick example to login into Github :-
+
+```php
+require_once 'vendor/autoload.php';
+
+use w3zone\Crawler\{Crawler, Services\phpCurl};
+
+$crawler = new Crawler(new phpCurl);
+
+$url = 'https://github.com/login';
+$response = $crawler->get($url)->dumpHeaders()->run();
+
+preg_match('#<input name="authenticity_token".*?value="(.*?)"#', $response['body'], $authenticity_token);
+
+$url = 'https://github.com/session';
+$post['commit'] = 'Sign in';
+$post['utf8'] = '✓';
+$post['authenticity_token'] = $authenticity_token[1];
+$post['login'] = 'valid email';
+$post['password'] = '';
+
+$response = $crawler
+    ->post(['url' => $url, 'data' => $post])
+    ->cookies($response['cookies'], 'w+r')
+    ->initialize([
+        CURLOPT_FOLLOWLOCATION => true
+    ])
+    ->dumpHeaders()
+->run();
+```
